@@ -75,53 +75,93 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchAccountDetails(final String username, final String userpass) {
-        mDatabase.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//    private void fetchAccountDetails(final String username, final String userpass) {
+//        mDatabase.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                Account account = dataSnapshot.getValue(Account.class);
+//                String role = dataSnapshot.child("role").getValue(String.class);
+//                if (account != null && account.getPassword().equals(userpass)) {
+//                    Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+//
+//                    // Determine user role and redirect accordingly
+//                    if ("admin".equals(account.getRole())) {
+//                        Intent intent = new Intent(LoginActivity.this, MainActivityAdmin.class);
+//                        intent.putExtra("role", role);
+//                        startActivity(intent);
+//                    }  else {
+//                        Intent intent = new Intent(LoginActivity.this, MainActivityUser.class);
+//                        intent.putExtra("username", username);
+//                        intent.putExtra("role", role);
+//                        startActivity(intent);
+//                    }
+//                } else {
+//                    // Invalid credentials or account does not exist
+//                    Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                Toast.makeText(LoginActivity.this, "Error fetching account details", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//
+//        // Check if the username exists in the database
+//        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if (!dataSnapshot.hasChild(username)) {
+//                    Toast.makeText(LoginActivity.this, "Account does not exist", Toast.LENGTH_SHORT).show();
+//                    // Handle logic to close the app or take appropriate action
+//                    // For example, you can finish the activity to prevent further navigation
+//                    finish();
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                Toast.makeText(LoginActivity.this, "Error checking account existence", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
+private void fetchAccountDetails(final String username, final String userpass) {
+    mDatabase.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists()) { // Kiểm tra nếu tài khoản tồn tại
                 Account account = dataSnapshot.getValue(Account.class);
-                String role = dataSnapshot.child("role").getValue(String.class);
+                String role = dataSnapshot.child("role").getValue(String.class); // Lấy role từ Firebase
+
+                // Kiểm tra mật khẩu
                 if (account != null && account.getPassword().equals(userpass)) {
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
-                    // Determine user role and redirect accordingly
-                    if ("admin".equals(account.getRole())) {
+                    // Xử lý chuyển hướng theo role
+                    if ("admin".equals(role)) {
                         Intent intent = new Intent(LoginActivity.this, MainActivityAdmin.class);
-                        intent.putExtra("role", role);
+                        intent.putExtra("role", role); // Chuyển role cho MainActivityAdmin
                         startActivity(intent);
-                    }  else {
+                    } else {
                         Intent intent = new Intent(LoginActivity.this, MainActivityUser.class);
                         intent.putExtra("username", username);
-                        intent.putExtra("role", role);
+                        intent.putExtra("role", role); // Chuyển role cho MainActivityUser
                         startActivity(intent);
                     }
                 } else {
-                    // Invalid credentials or account does not exist
+                    // Mật khẩu sai
                     Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                // Nếu tài khoản không tồn tại
+                Toast.makeText(LoginActivity.this, "Account does not exist", Toast.LENGTH_SHORT).show();
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(LoginActivity.this, "Error fetching account details", Toast.LENGTH_SHORT).show();
-            }
-        });
+        }
 
-        // Check if the username exists in the database
-        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.hasChild(username)) {
-                    Toast.makeText(LoginActivity.this, "Account does not exist", Toast.LENGTH_SHORT).show();
-                    // Handle logic to close the app or take appropriate action
-                    // For example, you can finish the activity to prevent further navigation
-                    finish();
-                }
-            }
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            Toast.makeText(LoginActivity.this, "Error fetching account details", Toast.LENGTH_SHORT).show();
+        }
+    });
+}
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(LoginActivity.this, "Error checking account existence", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 }
